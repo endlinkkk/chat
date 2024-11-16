@@ -9,5 +9,5 @@ def init_dummy_container() -> Container:
     container = _init_container()
 
     container.register(BaseUserRepository, MemoryUserRepository, scope=Scope.singleton)
-    
+
     return container

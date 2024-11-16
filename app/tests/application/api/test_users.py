@@ -15,4 +15,3 @@ def test_sign_up_success(app: FastAPI, client: TestClient, faker: Faker):
     }
     response: Response = client.post(url=url, json=input_data)
     assert response.is_success
-

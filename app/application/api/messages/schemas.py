@@ -19,18 +19,15 @@ class CreateChatResponseSchema(BaseModel):
             oid=chat.oid,
             title=chat.title.value,
         )
-    
+
 
 class UserSchema(BaseModel):
     username: str
     user_oid: str
 
     @classmethod
-    def from_entity(cls, user: User) -> 'UserSchema':
-        return cls(
-            username=user.username.value,
-            user_oid=user.oid
-        )
+    def from_entity(cls, user: User) -> "UserSchema":
+        return cls(username=user.username.value, user_oid=user.oid)
 
 
 class ChatDetailSchema(BaseModel):
@@ -45,7 +42,10 @@ class ChatDetailSchema(BaseModel):
             oid=chat.oid,
             title=chat.title.value,
             created_at=chat.created_at,
-            participants=[UserSchema(username=user.username.value, user_oid=user.oid) for user in chat.users]
+            participants=[
+                UserSchema(username=user.username.value, user_oid=user.oid)
+                for user in chat.users
+            ],
         )
 
 
@@ -58,7 +58,10 @@ class MessageDetailSchema(BaseModel):
     @classmethod
     def from_entity(cls, message: Message) -> "MessageDetailSchema":
         return MessageDetailSchema(
-            oid=message.oid, text=message.text.value, created_at=message.created_at, sender_oid=message.sender_oid
+            oid=message.oid,
+            text=message.text.value,
+            created_at=message.created_at,
+            sender_oid=message.sender_oid,
         )
 
 

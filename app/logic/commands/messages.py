@@ -17,7 +17,7 @@ from logic.services.auth import AuthService
 @dataclass(frozen=True)
 class CreateChatCommand(BaseCommand):
     title: str
-    access_token: str
+    user: User
 
 
 @dataclass(frozen=True)
@@ -27,20 +27,7 @@ class CreateChatCommandHandler(BaseCommandHandler[CreateChatCommand, Chat]):
     auth_service: AuthService
 
     async def handle(self, command: CreateChatCommand) -> Chat:
-        payload = await self.auth_service.decode_jwt(
-            token=command.access_token,
-        )
-
-        if payload is None:
-            raise InvalidTokenException()
-
-        user = await self.user_repository.get_user_by_user_oid(payload.get("sub"))
-
-        if not user:
-            raise UserNotFoundException()
-
-        if user.is_confirmed is False:
-            raise UserNotConfirmedException()
+        user = command.user
 
         title = Title(value=command.title)
         chat = Chat.create_chat(title=title)
@@ -53,7 +40,7 @@ class CreateChatCommandHandler(BaseCommandHandler[CreateChatCommand, Chat]):
 
 @dataclass(frozen=True)
 class GetUserChatsCommand(BaseCommand):
-    access_token: str
+    user: User
 
 
 @dataclass(frozen=True)
@@ -63,20 +50,7 @@ class GetUserChatsCommandHandler(BaseCommandHandler[GetUserChatsCommand, list[Ch
     auth_service: AuthService
 
     async def handle(self, command: CreateChatCommand) -> list[Chat]:
-        payload = await self.auth_service.decode_jwt(
-            token=command.access_token,
-        )
-
-        if payload is None:
-            raise InvalidTokenException()
-
-        user = await self.user_repository.get_user_by_user_oid(payload.get("sub"))
-
-        if not user:
-            raise UserNotFoundException()
-
-        if user.is_confirmed is False:
-            raise UserNotConfirmedException()
+        user = command.user
 
         chats = await self.chat_repository.get_chats_by_user_oid(user.oid)
 
@@ -85,7 +59,7 @@ class GetUserChatsCommandHandler(BaseCommandHandler[GetUserChatsCommand, list[Ch
 
 @dataclass(frozen=True)
 class GetUserChatMessagesCommand(BaseCommand):
-    access_token: str
+    user: User
     chat_oid: str
 
 
@@ -98,21 +72,6 @@ class GetUserChatMessagesCommandHandler(
     auth_service: AuthService
 
     async def handle(self, command) -> list[Message]:
-        payload = await self.auth_service.decode_jwt(
-            token=command.access_token,
-        )
-
-        if payload is None:
-            raise InvalidTokenException()
-
-        user = await self.user_repository.get_user_by_user_oid(payload.get("sub"))
-
-        if not user:
-            raise UserNotFoundException()
-
-        if user.is_confirmed is False:
-            raise UserNotConfirmedException()
-
         messages = await self.message_repository.get_messages_by_chat_oid(
             command.chat_oid
         )
@@ -123,7 +82,7 @@ class GetUserChatMessagesCommandHandler(
 class CreateMessageCommand(BaseCommand):
     text: str
     chat_oid: str
-    access_token: str
+    user: User
 
 
 @dataclass(frozen=True)
@@ -133,20 +92,7 @@ class CreateMessageCommandHandler(BaseCommandHandler[CreateMessageCommand, Messa
     auth_service: AuthService
 
     async def handle(self, command: CreateMessageCommand) -> Chat:
-        payload = await self.auth_service.decode_jwt(
-            token=command.access_token,
-        )
-
-        if payload is None:
-            raise InvalidTokenException()
-
-        user = await self.user_repository.get_user_by_user_oid(payload.get("sub"))
-
-        if not user:
-            raise UserNotFoundException()
-
-        if user.is_confirmed is False:
-            raise UserNotConfirmedException()
+        user = command.user
 
         text = Text(value=command.text)
 
@@ -161,7 +107,7 @@ class CreateMessageCommandHandler(BaseCommandHandler[CreateMessageCommand, Messa
 class AddUserToChatCommand(BaseCommand):
     user_oid: str
     chat_oid: str
-    access_token: str
+    user: User
 
 
 @dataclass(frozen=True)
@@ -171,34 +117,23 @@ class AddUserToChatCommandHandler(BaseCommandHandler[AddUserToChatCommand, None]
     auth_service: AuthService
 
     async def handle(self, command: AddUserToChatCommand):
-        payload = await self.auth_service.decode_jwt(
-            token=command.access_token,
+        invited = await self.user_repository.get_user_by_user_oid(
+            user_oid=command.user_oid
         )
-
-        if payload is None:
-            raise InvalidTokenException()
-
-        user = await self.user_repository.get_user_by_user_oid(payload.get("sub"))
-
-        if not user:
-            raise UserNotFoundException()
-
-        if user.is_confirmed is False:
-            raise UserNotConfirmedException()
-        
-        invited = await self.user_repository.get_user_by_user_oid(user_oid=command.user_oid)
 
         if not invited:
             raise UserNotFoundException()
 
-        chat = await self.chat_repository.get_chat_by_chat_oid(chat_oid=command.chat_oid)
+        chat = await self.chat_repository.get_chat_by_chat_oid(
+            chat_oid=command.chat_oid
+        )
 
         await self.chat_repository.add_user_to_chat(user=invited, chat=chat)
 
 
 @dataclass(frozen=True)
 class GetUsersCommand(BaseCommand):
-    access_token: str
+    user: User
 
 
 @dataclass(frozen=True)
@@ -207,21 +142,6 @@ class GetUsersCommandHandler(BaseCommandHandler[GetUsersCommand, list[User]]):
     auth_service: AuthService
 
     async def handle(self, command: GetUsersCommand) -> list[User]:
-        payload = await self.auth_service.decode_jwt(
-            token=command.access_token,
-        )
-
-        if payload is None:
-            raise InvalidTokenException()
-
-        user = await self.user_repository.get_user_by_user_oid(payload.get("sub"))
-
-        if not user:
-            raise UserNotFoundException()
-
-        if user.is_confirmed is False:
-            raise UserNotConfirmedException()
-        
         users = await self.user_repository.get_users(limit=10)
 
         return users

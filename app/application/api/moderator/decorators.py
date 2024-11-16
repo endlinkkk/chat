@@ -11,9 +11,11 @@ def handler_exceptions(handler):
     @wraps(handler)
     async def wrapper(*args, **kwargs):
         try:
-            token = kwargs['credentials'].credentials
-            mediator: Mediator = kwargs['container'].resolve(Mediator)
-            await mediator.handle_command(AccessCheckModeratorCommand(access_token=token))
+            token = kwargs["credentials"].credentials
+            mediator: Mediator = kwargs["container"].resolve(Mediator)
+            await mediator.handle_command(
+                AccessCheckModeratorCommand(access_token=token)
+            )
             result = await handler(*args, **kwargs)
         except ApplicationException as exception:
             raise HTTPException(

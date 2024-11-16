@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 from fastapi import WebSocket
 
+
 @dataclass
 class BaseConnectionManager(ABC):
     connections_map: dict[str, list[WebSocket]] = field(
@@ -21,5 +22,3 @@ class BaseConnectionManager(ABC):
 
     @abstractmethod
     async def disconnect_all(self, key: str): ...
-
-    

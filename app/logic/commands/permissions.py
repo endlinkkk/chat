@@ -18,7 +18,9 @@ class AccessCheckModeratorCommand(BaseCommand):
 
 
 @dataclass(frozen=True)
-class AccessCheckModeratorCommandHandler(BaseCommandHandler[AccessCheckModeratorCommand, User]):
+class AccessCheckModeratorCommandHandler(
+    BaseCommandHandler[AccessCheckModeratorCommand, User]
+):
     user_repository: BaseUserRepository
     auth_service: AuthService
 
@@ -37,13 +39,14 @@ class AccessCheckModeratorCommandHandler(BaseCommandHandler[AccessCheckModerator
 
         if user.is_moderator is False:
             raise AccessDeniedException()
-        
+
         return user
 
 
 @dataclass(frozen=True)
 class AccessCheckUserCommand(BaseCommand):
     access_token: str
+
 
 @dataclass(frozen=True)
 class AccessCheckUserCommandHandler(BaseCommandHandler[AccessCheckUserCommand, User]):
@@ -65,5 +68,5 @@ class AccessCheckUserCommandHandler(BaseCommandHandler[AccessCheckUserCommand, U
 
         if user.is_confirmed is False:
             raise UserNotConfirmedException()
-        
+
         return user

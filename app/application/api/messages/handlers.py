@@ -11,7 +11,6 @@ from application.api.messages.schemas import (
     MessageDetailSchema,
     UserSchema,
 )
-from domain.entities.users import User
 from logic.commands.messages import (
     AddUserToChatCommand,
     CreateChatCommand,
@@ -20,28 +19,17 @@ from logic.commands.messages import (
     GetUserChatsCommand,
     GetUsersCommand,
 )
-from logic.commands.users import ConfirmCodeCommand, SignInCommand, SignUpCommand
+from logic.commands.permissions import AccessCheckUserCommand
 from logic.init import init_container
 from logic.mediator import Mediator
 
 from fastapi.routing import APIRouter
-from fastapi import Depends, WebSocket, status
+from fastapi import Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from punq import Container
 
 router = APIRouter(tags=["Chat"])
 http_bearer = HTTPBearer()
-
-
-# Общие обработчики
-
-# Создать чат
-# Список своих чатов
-# Посмотреть сообщений для конкретного чата
-# Подключиться к чату по вебсокет
-# Написать сообщение
-# Удалить свой чат
-# Удалить свое сообщение
 
 
 @router.post(
@@ -63,8 +51,10 @@ async def create_user_chat_handler(
     mediator: Mediator = container.resolve(Mediator)
     token = credentials.credentials
 
+    user, *_ = await mediator.handle_command(AccessCheckUserCommand(access_token=token))
+
     chat, *_ = await mediator.handle_command(
-        CreateChatCommand(title=schema.title, access_token=token)
+        CreateChatCommand(title=schema.title, user=user)
     )
 
     return CreateChatResponseSchema.from_entity(chat=chat)
@@ -84,7 +74,8 @@ async def get_user_chats_handler(
 ):
     mediator: Mediator = container.resolve(Mediator)
     token = credentials.credentials
-    chats, *_ = await mediator.handle_command(GetUserChatsCommand(access_token=token))
+    user, *_ = await mediator.handle_command(AccessCheckUserCommand(access_token=token))
+    chats, *_ = await mediator.handle_command(GetUserChatsCommand(user=user))
     return GetUserChatsSchema(
         count=len(chats), chats=[ChatDetailSchema.from_entity(chat) for chat in chats]
     )
@@ -105,8 +96,9 @@ async def get_chat_messages_handler(
 ):
     mediator: Mediator = container.resolve(Mediator)
     token = credentials.credentials
+    user, *_ = await mediator.handle_command(AccessCheckUserCommand(access_token=token))
     messages, *_ = await mediator.handle_command(
-        GetUserChatMessagesCommand(access_token=token, chat_oid=chat_oid)
+        GetUserChatMessagesCommand(user=user, chat_oid=chat_oid)
     )
     return GetUserChatMessagesSchema(
         count=len(messages),
@@ -133,9 +125,9 @@ async def create_message_handler(
 ) -> CreateChatResponseSchema:
     mediator: Mediator = container.resolve(Mediator)
     token = credentials.credentials
-
+    user, *_ = await mediator.handle_command(AccessCheckUserCommand(access_token=token))
     message, *_ = await mediator.handle_command(
-        CreateMessageCommand(text=schema.text, chat_oid=chat_oid, access_token=token)
+        CreateMessageCommand(text=schema.text, chat_oid=chat_oid, user=user)
     )
 
     return CreateMessageResponseSchema.from_entity(message=message)
@@ -149,7 +141,6 @@ async def create_message_handler(
         status.HTTP_200_OK: {"description": "Пользователь добавлен в чат"},
         status.HTTP_400_BAD_REQUEST: {"description": "Что-то пошло не так"},
     },
-
 )
 @handler_exceptions
 async def add_user_to_chat_handler(
@@ -160,8 +151,9 @@ async def add_user_to_chat_handler(
 ) -> None:
     mediator: Mediator = container.resolve(Mediator)
     token = credentials.credentials
+    user, *_ = await mediator.handle_command(AccessCheckUserCommand(access_token=token))
     await mediator.handle_command(
-        AddUserToChatCommand(user_oid=user_oid, chat_oid=chat_oid, access_token=token)
+        AddUserToChatCommand(user_oid=user_oid, chat_oid=chat_oid, user=user)
     )
 
 
@@ -170,10 +162,9 @@ async def add_user_to_chat_handler(
     status_code=status.HTTP_200_OK,
     description="Список пользователей",
     responses={
-        status.HTTP_200_OK: {'model': GetUsersSchema},
+        status.HTTP_200_OK: {"model": GetUsersSchema},
         status.HTTP_400_BAD_REQUEST: {"description": "Что-то пошло не так"},
-        
-    }
+    },
 )
 async def get_users_handler(
     container: Container = Depends(init_container),
@@ -181,13 +172,12 @@ async def get_users_handler(
 ) -> GetUsersSchema:
     mediator: Mediator = container.resolve(Mediator)
     token = credentials.credentials
-    users, *_ = await mediator.handle_command(
-        GetUsersCommand(access_token=token)
-    )
+    user, *_ = await mediator.handle_command(AccessCheckUserCommand(access_token=token))
+    users, *_ = await mediator.handle_command(GetUsersCommand(user=user))
     return GetUsersSchema(
-        count=len(users),
-        users=[UserSchema.from_entity(user) for user in users]
+        count=len(users), users=[UserSchema.from_entity(user) for user in users]
     )
+
 
 # Обработчики для модератора
 
@@ -195,5 +185,3 @@ async def get_users_handler(
 # Получить все сообщения чата по oid
 # Удалить сообщение по oid
 # Заблокировать пользователя (Заблокированные пользователи не могут писать сообщения)
-
-

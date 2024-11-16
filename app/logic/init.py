@@ -28,7 +28,12 @@ from logic.commands.messages import (
     GetUsersCommand,
     GetUsersCommandHandler,
 )
-from logic.commands.permissions import AccessCheckModeratorCommand, AccessCheckModeratorCommandHandler, AccessCheckUserCommand, AccessCheckUserCommandHandler
+from logic.commands.permissions import (
+    AccessCheckModeratorCommand,
+    AccessCheckModeratorCommandHandler,
+    AccessCheckUserCommand,
+    AccessCheckUserCommandHandler,
+)
 from logic.commands.users import (
     ConfirmCodeCommand,
     ConfirmCodeCommandHandler,
@@ -151,13 +156,12 @@ def _init_container() -> Container:
         )
         access_check_moderator_command_handler = AccessCheckModeratorCommandHandler(
             user_repository=container.resolve(BaseUserRepository),
-            auth_service=container.resolve(AuthService)
+            auth_service=container.resolve(AuthService),
         )
         access_check_user_command_handler = AccessCheckUserCommandHandler(
             user_repository=container.resolve(BaseUserRepository),
-            auth_service=container.resolve(AuthService)
+            auth_service=container.resolve(AuthService),
         )
-
 
         # commands
         mediator.register_command(

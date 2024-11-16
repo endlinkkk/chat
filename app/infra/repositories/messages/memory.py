@@ -15,7 +15,6 @@ class MemoryChatRepository(BaseChatRepository):
     async def add_chat(self, chat: Chat):
         _local_storage.append(chat)
 
-
     async def get_chat_by_chat_oid(self, chat_oid: str) -> Chat | None:
         try:
             return next(chat for chat in _local_storage if chat.oid == chat_oid)
@@ -36,7 +35,7 @@ class MemoryChatRepository(BaseChatRepository):
                     chats.append(chat)
                     break
         return chats
-    
+
     async def add_user_to_chat(self, user: User, chat: Chat):
         if user not in chat.users and len(chat.users) < 2:
             chat.users.add(user)
@@ -47,6 +46,12 @@ class MemoryMessageRepository(BaseMessageRepository):
     async def add_message(self, message: Message):
         chat = next(chat for chat in _local_storage if chat.oid == message.chat_oid)
         chat.add_message(message)
+
+    async def get_message_by_message_oid(self, message_oid: str) -> Message:
+        for chat in _local_storage:
+            for message in chat.messages:
+                if message.oid == message_oid:
+                    return message
 
     async def get_messages_by_chat_oid(self, chat_oid) -> list[Message]:
         return [

@@ -32,3 +32,6 @@ class BaseMessageRepository(ABC):
 
     @abstractmethod
     async def get_messages_by_chat_oid(self, chat_oid: str) -> Iterable[Message]: ...
+
+    @abstractmethod
+    async def get_message_by_message_oid(self, message_oid: str) -> Message: ...

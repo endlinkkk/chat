@@ -20,6 +20,5 @@ class BaseUserRepository(ABC):
     @abstractmethod
     async def get_user_by_phone(self, phone: str) -> User: ...
 
-
     @abstractmethod
     async def get_users(self, limit: int) -> list[User]: ...

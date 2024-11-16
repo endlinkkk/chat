@@ -44,11 +44,10 @@ http_bearer = HTTPBearer()
 # Удалить свое сообщение
 
 
-
 @router.get(
     "/",
     responses={
-        status.HTTP_200_OK: {"description": 'Mod'},
+        status.HTTP_200_OK: {"description": "Mod"},
         status.HTTP_400_BAD_REQUEST: {"description": "Что-то пошло не так"},
     },
 )

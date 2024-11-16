@@ -1,6 +1,7 @@
 from pytest import fixture
 
 
+from infra.repositories.messages.base import BaseChatRepository, BaseMessageRepository
 from infra.repositories.users.base import BaseUserRepository
 from logic.mediator import Mediator
 from punq import Container
@@ -23,6 +24,12 @@ def user_repository(container: Container) -> BaseUserRepository:
     return container.resolve(BaseUserRepository)
 
 
-# @fixture(scope="function")
-# def chats_repository(container: Container) -> BaseChatsRepository:
-#     return container.resolve(BaseChatsRepository)
+@fixture(scope="function")
+def chat_repository(container: Container) -> BaseChatRepository:
+    return container.resolve(BaseChatRepository)
+
+
+@fixture(scope="function")
+def message_repository(container: Container) -> BaseMessageRepository:
+    return container.resolve(BaseMessageRepository)
+
