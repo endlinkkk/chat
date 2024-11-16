@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      - "${APP_PORT}:8000"
+
+    command: "uvicorn --factory application.api.main:create_application --timeout-graceful-shutdown 2 --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./app/:/app/
+    
