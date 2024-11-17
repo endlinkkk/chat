@@ -7,11 +7,8 @@ from infra.repositories.messages.base import BaseChatRepository, BaseMessageRepo
 from infra.repositories.users.base import BaseUserRepository
 from logic.commands.base import BaseCommand, BaseCommandHandler
 from logic.exceptions.users import (
-    InvalidTokenException,
-    UserNotConfirmedException,
     UserNotFoundException,
 )
-from logic.services.auth import AuthService
 
 
 @dataclass(frozen=True)
@@ -24,7 +21,6 @@ class CreateChatCommand(BaseCommand):
 class CreateChatCommandHandler(BaseCommandHandler[CreateChatCommand, Chat]):
     user_repository: BaseUserRepository
     chat_repository: BaseChatRepository
-    auth_service: AuthService
 
     async def handle(self, command: CreateChatCommand) -> Chat:
         user = command.user
@@ -47,7 +43,6 @@ class GetUserChatsCommand(BaseCommand):
 class GetUserChatsCommandHandler(BaseCommandHandler[GetUserChatsCommand, list[Chat]]):
     user_repository: BaseUserRepository
     chat_repository: BaseChatRepository
-    auth_service: AuthService
 
     async def handle(self, command: CreateChatCommand) -> list[Chat]:
         user = command.user
@@ -69,7 +64,6 @@ class GetUserChatMessagesCommandHandler(
 ):
     user_repository: BaseUserRepository
     message_repository: BaseMessageRepository
-    auth_service: AuthService
 
     async def handle(self, command) -> list[Message]:
         messages = await self.message_repository.get_messages_by_chat_oid(
@@ -89,7 +83,6 @@ class CreateMessageCommand(BaseCommand):
 class CreateMessageCommandHandler(BaseCommandHandler[CreateMessageCommand, Message]):
     user_repository: BaseUserRepository
     message_repository: BaseMessageRepository
-    auth_service: AuthService
 
     async def handle(self, command: CreateMessageCommand) -> Chat:
         user = command.user
@@ -114,7 +107,6 @@ class AddUserToChatCommand(BaseCommand):
 class AddUserToChatCommandHandler(BaseCommandHandler[AddUserToChatCommand, None]):
     user_repository: BaseUserRepository
     chat_repository: BaseChatRepository
-    auth_service: AuthService
 
     async def handle(self, command: AddUserToChatCommand):
         invited = await self.user_repository.get_user_by_user_oid(
@@ -139,7 +131,6 @@ class GetUsersCommand(BaseCommand):
 @dataclass(frozen=True)
 class GetUsersCommandHandler(BaseCommandHandler[GetUsersCommand, list[User]]):
     user_repository: BaseUserRepository
-    auth_service: AuthService
 
     async def handle(self, command: GetUsersCommand) -> list[User]:
         users = await self.user_repository.get_users(limit=10)

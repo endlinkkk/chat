@@ -1,5 +1,4 @@
 from httpx import Response
-from fastapi import status
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient

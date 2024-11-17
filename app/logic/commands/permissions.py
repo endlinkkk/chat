@@ -6,6 +6,7 @@ from logic.commands.base import BaseCommand, BaseCommandHandler
 from logic.exceptions.users import (
     AccessDeniedException,
     InvalidTokenException,
+    UserIsBlockedException,
     UserNotConfirmedException,
     UserNotFoundException,
 )
@@ -68,5 +69,8 @@ class AccessCheckUserCommandHandler(BaseCommandHandler[AccessCheckUserCommand, U
 
         if user.is_confirmed is False:
             raise UserNotConfirmedException()
+
+        if user.is_blocked is True:
+            raise UserIsBlockedException()
 
         return user

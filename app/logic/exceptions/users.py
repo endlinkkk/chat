@@ -57,3 +57,10 @@ class AccessDeniedException(LogicException):
     @property
     def message(self):
         return "This profile does not have the required permissions"
+
+
+@dataclass(eq=False)
+class UserIsBlockedException(LogicException):
+    @property
+    def message(self):
+        return "User is blocked"

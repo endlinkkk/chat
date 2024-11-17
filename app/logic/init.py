@@ -28,6 +28,7 @@ from logic.commands.messages import (
     GetUsersCommand,
     GetUsersCommandHandler,
 )
+from logic.commands.moderators import DeleteUserCommand, DeleteUserCommandHandler
 from logic.commands.permissions import (
     AccessCheckModeratorCommand,
     AccessCheckModeratorCommandHandler,
@@ -107,6 +108,7 @@ def _init_container() -> Container:
     container.register(GetUsersCommand)
     container.register(AccessCheckModeratorCommand)
     container.register(AccessCheckUserCommand)
+    container.register(DeleteUserCommand)
 
     def init_mediator() -> Mediator:
         mediator = Mediator()
@@ -128,37 +130,35 @@ def _init_container() -> Container:
         create_chat_handler = CreateChatCommandHandler(
             user_repository=container.resolve(BaseUserRepository),
             chat_repository=container.resolve(BaseChatRepository),
-            auth_service=container.resolve(AuthService),
         )
         get_user_chats_handler = GetUserChatsCommandHandler(
             user_repository=container.resolve(BaseUserRepository),
             chat_repository=container.resolve(BaseChatRepository),
-            auth_service=container.resolve(AuthService),
         )
         get_user_chat_messages_handler = GetUserChatMessagesCommandHandler(
             user_repository=container.resolve(BaseUserRepository),
             message_repository=container.resolve(BaseMessageRepository),
-            auth_service=container.resolve(AuthService),
         )
         create_message_command_handler = CreateMessageCommandHandler(
             user_repository=container.resolve(BaseUserRepository),
             message_repository=container.resolve(BaseMessageRepository),
-            auth_service=container.resolve(AuthService),
         )
         add_user_to_chat_command_handler = AddUserToChatCommandHandler(
             user_repository=container.resolve(BaseUserRepository),
             chat_repository=container.resolve(BaseChatRepository),
-            auth_service=container.resolve(AuthService),
         )
         get_users_command_handler = GetUsersCommandHandler(
             user_repository=container.resolve(BaseUserRepository),
-            auth_service=container.resolve(AuthService),
         )
         access_check_moderator_command_handler = AccessCheckModeratorCommandHandler(
             user_repository=container.resolve(BaseUserRepository),
             auth_service=container.resolve(AuthService),
         )
         access_check_user_command_handler = AccessCheckUserCommandHandler(
+            user_repository=container.resolve(BaseUserRepository),
+            auth_service=container.resolve(AuthService),
+        )
+        delete_user_command_handler = DeleteUserCommandHandler(
             user_repository=container.resolve(BaseUserRepository),
             auth_service=container.resolve(AuthService),
         )
@@ -202,6 +202,10 @@ def _init_container() -> Container:
         mediator.register_command(
             command=AccessCheckUserCommand,
             command_handlers=[access_check_user_command_handler],
+        )
+        mediator.register_command(
+            command=DeleteUserCommand,
+            command_handlers=[delete_user_command_handler],
         )
 
         return mediator

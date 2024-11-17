@@ -4,9 +4,8 @@ from application.api.users.schemas import (
     SignInRequestSchema,
     SignUpRequestSchema,
     TokenResponseSchema,
-    UserResponseSchema,
+    
 )
-from domain.entities.users import User
 from logic.commands.users import ConfirmCodeCommand, SignInCommand, SignUpCommand
 from logic.init import init_container
 from logic.mediator import Mediator
@@ -14,7 +13,7 @@ from logic.mediator import Mediator
 from fastapi.routing import APIRouter
 from fastapi import status
 from fastapi import Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer
 from punq import Container
 
 router = APIRouter(tags=["Auth"])

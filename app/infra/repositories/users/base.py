@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Iterable
 
-from domain.entities.messages import Chat
 from domain.entities.users import User
 
 

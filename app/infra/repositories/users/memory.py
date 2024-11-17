@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Iterable
 
-from domain.entities.messages import Chat
+
 from domain.entities.users import User
 from infra.repositories.users.base import BaseUserRepository
 
@@ -16,7 +15,7 @@ class MemoryUserRepository(BaseUserRepository):
     async def delete_user_by_user_oid(self, user_oid: str):
         for user in self._saved_users:
             if user.oid == user_oid:
-                self._saved_users.remove(user)
+                user.is_blocked = True
                 break
 
     async def get_user_by_user_oid(self, user_oid: str) -> User | None:

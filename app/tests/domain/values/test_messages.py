@@ -1,5 +1,5 @@
 from datetime import datetime
-from domain.entities.messages import Chat, Message
+from domain.entities.messages import Message
 from domain.entities.users import User
 from domain.exceptions.messages import EmptyTextException
 from domain.values.messages import Text

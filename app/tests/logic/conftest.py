@@ -18,13 +18,25 @@ def user() -> User:
 
 
 @fixture(scope="function")
+def moderator() -> User:
+    username = Username(value="moderator")
+    phone = Phone(value="+70000000000")
+    password = Password(value="alpine1212")
+    crd = Credentials(phone=phone, password=password)
+    user_moder = User(
+        username=username, credentials=crd, is_confirmed=True, is_moderator=True
+    )
+    return user_moder
+
+
+@fixture(scope="function")
 def chat() -> Chat:
     return Chat(
         title=Title(value="mychat"),
     )
 
 
-@fixture(scope='function')
+@fixture(scope="function")
 def user2() -> User:
     username = Username(value="user2")
     phone = Phone(value="+79010000001")
@@ -35,7 +47,7 @@ def user2() -> User:
     return user
 
 
-@fixture(scope='function')
+@fixture(scope="function")
 def users() -> list[User]:
     users_list = []
     for i in range(5):

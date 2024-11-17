@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from domain.entities.messages import Chat, Message
 from domain.entities.users import User
@@ -10,8 +10,6 @@ _local_storage: list[Chat] = []
 
 @dataclass
 class MemoryChatRepository(BaseChatRepository):
-    # _saved_chats: list[Chat] = field(default_factory=list, kw_only=True)
-
     async def add_chat(self, chat: Chat):
         _local_storage.append(chat)
 

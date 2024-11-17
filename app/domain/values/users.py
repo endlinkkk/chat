@@ -9,7 +9,6 @@ from domain.exceptions.users import (
 )
 from domain.values.base import BaseValue
 
-import bcrypt
 
 
 @dataclass(frozen=True)
@@ -42,12 +41,3 @@ class Password(BaseValue):
     def validate(self):
         if len(self.value) < 10:
             raise PasswordTooShortException()
-
-    # def get_hash_password(self) -> bytes:
-    #     salt = bcrypt.gensalt()
-    #     pwd_bytes = self.value.encode()
-    #     return bcrypt.hashpw(pwd_bytes, salt)
-
-    # def validate_password(self, password: str) -> bool:
-    #     hash_pwd = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-    #     return bcrypt.checkpw(password=self.value.encode(), hashed_password=hash_pwd)

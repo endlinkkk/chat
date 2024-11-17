@@ -32,4 +32,3 @@ def chat_repository(container: Container) -> BaseChatRepository:
 @fixture(scope="function")
 def message_repository(container: Container) -> BaseMessageRepository:
     return container.resolve(BaseMessageRepository)
-
