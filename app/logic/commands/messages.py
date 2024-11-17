@@ -6,6 +6,7 @@ from domain.values.messages import Text, Title
 from infra.repositories.messages.base import BaseChatRepository, BaseMessageRepository
 from infra.repositories.users.base import BaseUserRepository
 from logic.commands.base import BaseCommand, BaseCommandHandler
+from logic.exceptions.messages import ChatNotFoundException
 from logic.exceptions.users import (
     UserNotFoundException,
 )
@@ -136,3 +137,25 @@ class GetUsersCommandHandler(BaseCommandHandler[GetUsersCommand, list[User]]):
         users = await self.user_repository.get_users(limit=10)
 
         return users
+
+
+@dataclass(frozen=True)
+class GetChatCommand(BaseCommand):
+    chat_oid: str
+
+
+@dataclass(frozen=True)
+class GetChatCommandHandler(BaseCommandHandler[GetChatCommand, Chat]):
+    user_repository: BaseUserRepository
+    chat_repository: BaseChatRepository
+
+    async def handle(self, command: GetChatCommand) -> Chat:
+
+        chat = await self.chat_repository.get_chat_by_chat_oid(
+            chat_oid=command.chat_oid
+        )
+
+        if chat is None:
+            raise ChatNotFoundException()
+
+        return chat

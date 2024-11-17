@@ -14,6 +14,7 @@ from infra.repositories.messages.memory import (
 )
 from infra.repositories.users.base import BaseUserRepository
 from infra.repositories.users.memory import MemoryUserRepository
+from infra.websockets.managers import BaseConnectionManager, ConnectionManager
 from logic.commands.messages import (
     AddUserToChatCommand,
     AddUserToChatCommandHandler,
@@ -21,6 +22,8 @@ from logic.commands.messages import (
     CreateChatCommandHandler,
     CreateMessageCommand,
     CreateMessageCommandHandler,
+    GetChatCommand,
+    GetChatCommandHandler,
     GetUserChatMessagesCommand,
     GetUserChatMessagesCommandHandler,
     GetUserChatsCommand,
@@ -109,6 +112,13 @@ def _init_container() -> Container:
     container.register(AccessCheckModeratorCommand)
     container.register(AccessCheckUserCommand)
     container.register(DeleteUserCommand)
+    container.register(GetChatCommand)
+
+    # Message Broker
+
+    container.register(
+        BaseConnectionManager, instance=ConnectionManager(), scope=Scope.singleton
+    )
 
     def init_mediator() -> Mediator:
         mediator = Mediator()
@@ -162,6 +172,10 @@ def _init_container() -> Container:
             user_repository=container.resolve(BaseUserRepository),
             auth_service=container.resolve(AuthService),
         )
+        get_chat_command_handler = GetChatCommandHandler(
+            user_repository=container.resolve(BaseUserRepository),
+            chat_repository=container.resolve(BaseChatRepository),
+        )
 
         # commands
         mediator.register_command(
@@ -206,6 +220,10 @@ def _init_container() -> Container:
         mediator.register_command(
             command=DeleteUserCommand,
             command_handlers=[delete_user_command_handler],
+        )
+        mediator.register_command(
+            command=GetChatCommand,
+            command_handlers=[get_chat_command_handler]
         )
 
         return mediator

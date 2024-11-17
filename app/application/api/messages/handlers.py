@@ -15,6 +15,7 @@ from logic.commands.messages import (
     AddUserToChatCommand,
     CreateChatCommand,
     CreateMessageCommand,
+    GetChatCommand,
     GetUserChatMessagesCommand,
     GetUserChatsCommand,
     GetUsersCommand,
@@ -79,6 +80,26 @@ async def get_user_chats_handler(
     return GetUserChatsSchema(
         count=len(chats), chats=[ChatDetailSchema.from_entity(chat) for chat in chats]
     )
+
+
+@router.get(
+    "/{chat_oid}/",
+    responses={
+        status.HTTP_200_OK: {"model": ChatDetailSchema},
+        status.HTTP_400_BAD_REQUEST: {"description": "Что-то пошло не так"},
+    },
+)
+@handler_exceptions
+async def get_chat_detail_handler(
+    chat_oid: str,
+    container: Container = Depends(init_container),
+    credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
+):
+    mediator: Mediator = container.resolve(Mediator)
+    token = credentials.credentials
+    user, *_ = await mediator.handle_command(AccessCheckUserCommand(access_token=token))
+    chat, *_ = await mediator.handle_command(GetChatCommand(chat_oid=chat_oid))
+    return ChatDetailSchema.from_entity(chat)
 
 
 @router.get(
