@@ -7,6 +7,7 @@ from punq import (
 
 from infra.caches.users.base import BaseUserCache
 from infra.caches.users.memory import MemoryUserCache
+from infra.caches.users.redis import RedisUserCache
 from infra.repositories.messages.base import BaseChatRepository, BaseMessageRepository
 from infra.repositories.messages.memory import (
     MemoryChatRepository,
@@ -51,6 +52,8 @@ from logic.services.auth import AuthService
 from logic.services.senders import BaseSenderService, DummySenderService
 from settings.config import Settings
 
+from redis.asyncio import Redis
+
 
 @lru_cache(1)
 def init_container() -> Container:
@@ -61,14 +64,34 @@ def _init_container() -> Container:
     container = Container()
     container.register(Settings, instance=Settings(), scope=Scope.singleton)
 
+    settings: Settings = container.resolve(Settings)
+
     def create_sender_service() -> BaseSenderService:
         return DummySenderService()
+    
+    def create_redis_client():
+        return Redis(
+            host=settings.cache_config.cache_host,
+            port=settings.cache_config.cache_port,
+            password=settings.cache_config.cache_password,
+
+            
+        )
+    
+    container.register(
+        Redis, factory=create_redis_client, scope=Scope.singleton
+    )
+
+    redis_client = container.resolve(Redis)
+
 
     def create_user_cache() -> BaseUserCache:
-        return MemoryUserCache()
+        return RedisUserCache(
+            redis_client=redis_client,
+            cache_config=settings.cache_config
+        )
 
     def create_auth_service() -> AuthService:
-        settings: Settings = container.resolve(Settings)
         return AuthService(
             cache_client=create_user_cache(),
             sender_service=create_sender_service(),
@@ -97,6 +120,10 @@ def _init_container() -> Container:
     # Reegister message repository
     container.register(
         BaseMessageRepository, factory=create_message_repository, scope=Scope.singleton
+    )
+    # Register user cache
+    container.register(
+        BaseUserCache, factory=create_user_cache, scope=Scope.singleton
     )
 
     # Register command handlers

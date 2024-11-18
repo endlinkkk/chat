@@ -1,5 +1,5 @@
 from fastapi import WebSocket, WebSocketDisconnect, Depends, APIRouter
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPBearer
 from punq import Container
 
 from infra.websockets.managers import BaseConnectionManager

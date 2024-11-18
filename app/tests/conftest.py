@@ -1,6 +1,7 @@
 from pytest import fixture
 
 
+from infra.caches.users.base import BaseUserCache
 from infra.repositories.messages.base import BaseChatRepository, BaseMessageRepository
 from infra.repositories.users.base import BaseUserRepository
 from logic.mediator import Mediator
@@ -32,3 +33,9 @@ def chat_repository(container: Container) -> BaseChatRepository:
 @fixture(scope="function")
 def message_repository(container: Container) -> BaseMessageRepository:
     return container.resolve(BaseMessageRepository)
+
+
+
+@fixture(scope="function")
+def user_cache(container: Container) -> BaseUserCache:
+    return container.resolve(BaseUserCache)

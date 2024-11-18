@@ -10,4 +10,17 @@ services:
     command: "uvicorn --factory application.api.main:create_application --timeout-graceful-shutdown 2 --host 0.0.0.0 --port 8000 --reload"
     volumes:
       - ./app/:/app/
+  
+  cache:
+    image: redis
+    container_name: cache
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_USER_PASSWORD=${REDIS_USER_PASSWORD}
+    ports:
+      - "${CACHE_PORT}:6379"
+    volumes:
+      - ./redisdata:/data
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     
