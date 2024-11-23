@@ -23,13 +23,6 @@ class SignUpCommand(BaseCommand):
 
 @dataclass(frozen=True)
 class SignUpCommandHandler(BaseCommandHandler[SignUpCommand, None]):
-    """
-    1. Хэшируем пароль
-    2. Сохраняем пользователя в БД с флагом неподтвержденный
-    3. Генерируем код и сохрянем во временное хранилище
-    4. Отправляем пользователю код подтверждения
-    """
-
     user_repository: BaseUserRepository
     auth_service: AuthService
 
@@ -62,13 +55,6 @@ class ConfirmCodeCommand(BaseCommand):
 
 @dataclass(frozen=True)
 class ConfirmCodeCommandHandler(BaseCommandHandler[ConfirmCodeCommand, str]):
-    """
-    1. Проверяем что переданный код совпадает с сохраненным
-    2. Генерируем токен
-    3. Выставляем пользователю статус подтвержденного
-    4. Отдаем пользователю токен
-    """
-
     user_repository: BaseUserRepository
     auth_service: AuthService
 
@@ -82,7 +68,7 @@ class ConfirmCodeCommandHandler(BaseCommandHandler[ConfirmCodeCommand, str]):
         ):
             raise CodeNotVerifiedException()
 
-        user.is_confirmed = True
+        await self.user_repository.confirm_user(user_oid=user.oid)
 
         token = await self.auth_service.encode_jwt(user)
 

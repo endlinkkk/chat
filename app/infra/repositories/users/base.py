@@ -20,3 +20,6 @@ class BaseUserRepository(ABC):
 
     @abstractmethod
     async def get_users(self, limit: int) -> list[User]: ...
+
+    @abstractmethod
+    async def confirm_user(self, user_oid: str): ...

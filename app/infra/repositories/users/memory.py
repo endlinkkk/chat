@@ -37,3 +37,9 @@ class MemoryUserRepository(BaseUserRepository):
 
     async def get_users(self, limit: int) -> list[User]:
         return self._saved_users[:limit]
+
+    async def confirm_user(self, user_oid: str):
+        for user in self._saved_users:
+            if user.oid == user_oid:
+                user.is_confirmed = True
+                break

@@ -7,6 +7,7 @@ from redis.asyncio import Redis
 
 from settings.config import CacheConfig
 
+
 @dataclass
 class BaseRedisUserCache(ABC):
     redis_client: Redis
@@ -32,5 +33,3 @@ class RedisUserCache(BaseRedisUserCache, BaseUserCache):
         if saved_code:
             saved_code = saved_code.decode()
         return saved_code == code if saved_code is not None else False
-    
-    

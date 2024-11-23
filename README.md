@@ -26,13 +26,23 @@ make app
 make app-down
 ```
 
-### Создание приватного ключа
+### Запуск тестов
 ```Makefile
-make pм-key
+make app-test
 ```
 
-### Очистка базы данных
+### Запуск мониторинга контейнеров
 ```Makefile
-make db-clear
+make app-logs
+```
+
+### Создание приватного ключа
+```Makefile
+make pv-key
+```
+
+### Создание публичного ключа
+```Makefile
+make pb-key
 ```
 

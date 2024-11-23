@@ -17,16 +17,18 @@ http_bearer = HTTPBearer()
 # WebSoket
 @router.websocket("/{chat_oid}/")
 async def websocket_endpoint(
-    chat_oid: str, websocket: WebSocket, container: Container = Depends(init_container),
+    chat_oid: str,
+    websocket: WebSocket,
+    container: Container = Depends(init_container),
 ):
     connection_manager: BaseConnectionManager = container.resolve(BaseConnectionManager)
     mediator: Mediator = container.resolve(Mediator)
-    
-    token = websocket.headers.get('Authorization')
+
+    token = websocket.headers.get("Authorization")
     if token is None or not token.startswith("Bearer "):
         await websocket.close(code=1008)
         return
-    
+
     token = token.split(" ")[1]
     user, *_ = await mediator.handle_command(AccessCheckUserCommand(access_token=token))
 
@@ -46,7 +48,9 @@ async def websocket_endpoint(
         while True:
             message = await websocket.receive_text()
             await connection_manager.send_all(chat_oid, message.encode())
-            await mediator.handle_command(CreateMessageCommand(text=message, chat_oid=chat_oid, user=user))
+            await mediator.handle_command(
+                CreateMessageCommand(text=message, chat_oid=chat_oid, user=user)
+            )
 
     except WebSocketDisconnect:
         await connection_manager.remove_connection(websocket=websocket, key=chat_oid)

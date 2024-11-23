@@ -150,7 +150,6 @@ class GetChatCommandHandler(BaseCommandHandler[GetChatCommand, Chat]):
     chat_repository: BaseChatRepository
 
     async def handle(self, command: GetChatCommand) -> Chat:
-
         chat = await self.chat_repository.get_chat_by_chat_oid(
             chat_oid=command.chat_oid
         )

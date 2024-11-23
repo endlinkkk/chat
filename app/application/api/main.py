@@ -14,5 +14,5 @@ def create_application() -> FastAPI:
     app.include_router(auth_router, prefix="/auth")
     app.include_router(message_router, prefix="/chats")
     app.include_router(moderator_router, prefix="/m/chats")
-    app.include_router(message_ws_router, prefix='/chats')
+    app.include_router(message_ws_router, prefix="/chats")
     return app

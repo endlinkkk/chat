@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from fastapi import WebSocket
 
 
-
 @dataclass
 class BaseConnectionManager(ABC):
     connections_map: dict[str, list[WebSocket]] = field(
@@ -44,13 +43,11 @@ class ConnectionManager(BaseConnectionManager):
         async with self.lock_map[key]:
             self.connections_map[key].remove(websocket)
 
-    
     async def send_all(self, key: str, bytes_: bytes):
         print(key, bytes_)
         for websocket in self.connections_map[key]:
             await websocket.send_bytes(bytes_)
 
-    
     async def disconnect_all(self, key: str):
         if key in self.lock_map:
             async with self.lock_map[key]:

@@ -6,15 +6,19 @@ from punq import (
 )
 
 from infra.caches.users.base import BaseUserCache
-from infra.caches.users.memory import MemoryUserCache
 from infra.caches.users.redis import RedisUserCache
 from infra.repositories.messages.base import BaseChatRepository, BaseMessageRepository
 from infra.repositories.messages.memory import (
     MemoryChatRepository,
     MemoryMessageRepository,
 )
+from infra.repositories.messages.mongo import (
+    MongoDBChatRepository,
+    MongoDBMessageRepository,
+)
 from infra.repositories.users.base import BaseUserRepository
 from infra.repositories.users.memory import MemoryUserRepository
+from infra.repositories.users.mongo import MongoDBUserRepository
 from infra.websockets.managers import BaseConnectionManager, ConnectionManager
 from logic.commands.messages import (
     AddUserToChatCommand,
@@ -53,6 +57,7 @@ from logic.services.senders import BaseSenderService, DummySenderService
 from settings.config import Settings
 
 from redis.asyncio import Redis
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 @lru_cache(1)
@@ -66,29 +71,56 @@ def _init_container() -> Container:
 
     settings: Settings = container.resolve(Settings)
 
+    def create_mongodb_client() -> AsyncIOMotorClient:
+        return AsyncIOMotorClient(
+            settings.mongo_config.mongodb_connection_uri,
+            serverSelectionTimeoutMS=3000,
+        )
+
+    container.register(
+        AsyncIOMotorClient, factory=create_mongodb_client, scope=Scope.singleton
+    )
+
+    mongo_client = container.resolve(AsyncIOMotorClient)
+
+    def init_chat_mongodb_repository() -> BaseChatRepository:
+        return MongoDBChatRepository(
+            mongo_db_client=mongo_client,
+            mongo_db_name=settings.mongo_config.mongodb_database,
+            mongo_db_collection_name=settings.mongo_config.mongodb_chat_collection,
+        )
+
+    def init_message_mongodb_repository() -> BaseMessageRepository:
+        return MongoDBMessageRepository(
+            mongo_db_client=mongo_client,
+            mongo_db_name=settings.mongo_config.mongodb_database,
+            mongo_db_collection_name=settings.mongo_config.mongodb_message_collection,
+        )
+
+    def init_user_mongodb_repository() -> BaseUserRepository:
+        return MongoDBUserRepository(
+            mongo_db_client=mongo_client,
+            mongo_db_name=settings.mongo_config.mongodb_database,
+            mongo_db_collection_name=settings.mongo_config.mongodb_user_collection,
+        )
+
     def create_sender_service() -> BaseSenderService:
         return DummySenderService()
-    
+
     def create_redis_client():
         return Redis(
             host=settings.cache_config.cache_host,
             port=settings.cache_config.cache_port,
             password=settings.cache_config.cache_password,
-
-            
         )
-    
-    container.register(
-        Redis, factory=create_redis_client, scope=Scope.singleton
-    )
+
+    container.register(Redis, factory=create_redis_client, scope=Scope.singleton)
 
     redis_client = container.resolve(Redis)
 
-
     def create_user_cache() -> BaseUserCache:
         return RedisUserCache(
-            redis_client=redis_client,
-            cache_config=settings.cache_config
+            redis_client=redis_client, cache_config=settings.cache_config
         )
 
     def create_auth_service() -> AuthService:
@@ -111,20 +143,20 @@ def _init_container() -> Container:
     container.register(AuthService, factory=create_auth_service, scope=Scope.singleton)
     # Register user repository
     container.register(
-        BaseUserRepository, factory=create_user_repository, scope=Scope.singleton
+        BaseUserRepository, factory=init_user_mongodb_repository, scope=Scope.singleton
     )
     # Register chat repository
     container.register(
-        BaseChatRepository, factory=create_chat_repository, scope=Scope.singleton
+        BaseChatRepository, factory=init_chat_mongodb_repository, scope=Scope.singleton
     )
     # Reegister message repository
     container.register(
-        BaseMessageRepository, factory=create_message_repository, scope=Scope.singleton
+        BaseMessageRepository,
+        factory=init_message_mongodb_repository,
+        scope=Scope.singleton,
     )
     # Register user cache
-    container.register(
-        BaseUserCache, factory=create_user_cache, scope=Scope.singleton
-    )
+    container.register(BaseUserCache, factory=create_user_cache, scope=Scope.singleton)
 
     # Register command handlers
     container.register(SignUpCommandHandler)
@@ -249,8 +281,7 @@ def _init_container() -> Container:
             command_handlers=[delete_user_command_handler],
         )
         mediator.register_command(
-            command=GetChatCommand,
-            command_handlers=[get_chat_command_handler]
+            command=GetChatCommand, command_handlers=[get_chat_command_handler]
         )
 
         return mediator

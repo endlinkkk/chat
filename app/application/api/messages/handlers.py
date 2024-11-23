@@ -179,7 +179,7 @@ async def add_user_to_chat_handler(
 
 
 @router.get(
-    "/users/",
+    "/users",
     status_code=status.HTTP_200_OK,
     description="Список пользователей",
     responses={
@@ -187,6 +187,7 @@ async def add_user_to_chat_handler(
         status.HTTP_400_BAD_REQUEST: {"description": "Что-то пошло не так"},
     },
 )
+@handler_exceptions
 async def get_users_handler(
     container: Container = Depends(init_container),
     credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
@@ -198,11 +199,3 @@ async def get_users_handler(
     return GetUsersSchema(
         count=len(users), users=[UserSchema.from_entity(user) for user in users]
     )
-
-
-# Обработчики для модератора
-
-# Список всех чатов
-# Получить все сообщения чата по oid
-# Удалить сообщение по oid
-# Заблокировать пользователя (Заблокированные пользователи не могут писать сообщения)

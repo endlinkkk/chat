@@ -35,7 +35,6 @@ def message_repository(container: Container) -> BaseMessageRepository:
     return container.resolve(BaseMessageRepository)
 
 
-
 @fixture(scope="function")
 def user_cache(container: Container) -> BaseUserCache:
     return container.resolve(BaseUserCache)

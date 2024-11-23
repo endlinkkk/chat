@@ -10,7 +10,6 @@ from domain.exceptions.users import (
 from domain.values.base import BaseValue
 
 
-
 @dataclass(frozen=True)
 class Username(BaseValue):
     value: str
